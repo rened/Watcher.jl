@@ -1,13 +1,14 @@
-language: julia
-os:
-  - linux
-  - osx
-julia:
-  - release
-  - nightly
+language: cpp
+compiler:
+  - clang
 notifications:
-  email: false
-# uncomment the following lines to override the default test script
-#script:
-#  - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
-#  - julia --check-bounds=yes -e 'Pkg.clone(pwd()); Pkg.build("Watcher"); Pkg.test("Watcher"; coverage=true)'
+  email: 
+      - code@donner.at
+before_install:
+  - sudo add-apt-repository ppa:staticfloat/julia-deps -y
+  - sudo add-apt-repository ppa:staticfloat/juliareleases -y
+  - sudo apt-get update -qq -y
+  - sudo apt-get install libpcre3-dev julia -y
+script:
+  - julia -e 'Pkg.init(); run(`ln -s $(pwd()) $(Pkg.dir("Watcher"))`); Pkg.resolve()'
+  - julia ~/.julia/v0.3/Watcher/test/runtests.jl
