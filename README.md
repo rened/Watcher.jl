@@ -23,3 +23,18 @@ julia -e "using Watcher" -f=jl,txt -w=src,test echo "something changed"
 `-w=dir1,dir2` tells it to look only in these two directors, default is the current directory and all its sub directories
 
 Everything after any `-f` and `-w` parameters is the command the will get executed, with the default being `julia test/runtests.jl`.
+
+## Tips
+
+It is recommended to put `println` statements at the beginning and end of your unit test file, to get immediate feedback that the tests started running (executing `using` statements can take some time):
+
+```jl
+println("Starting runtests.jl ...")
+using FactCheck, YourPackage
+
+# run your tests
+
+println(" ... finished runtests.jl")
+FactCheck.exitstatus()
+```
+

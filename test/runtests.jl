@@ -2,7 +2,6 @@ using FactCheck
 include("../src/code.jl")
 
 
-
 # this non-test helps during the manual testing of Watcher.jl
 # as the normal tests just finish too fast
 
