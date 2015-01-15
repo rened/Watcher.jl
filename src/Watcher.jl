@@ -6,7 +6,6 @@ include("code.jl")
 # start the watchers
 
 (dirs, filetypes, cmd, runnow) = parseargs()
-@show cmd runnow
 
 files = filter(x -> any(map(y -> endswith(x,y), filetypes)), walk().files)
 
