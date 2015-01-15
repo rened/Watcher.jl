@@ -15,14 +15,16 @@ This will watch all `jl` files in the current directory and in subdiretories, an
 You can change this behaviour:
 
 ```jl
-julia -e "using Watcher" -f=jl,txt -w=src,test echo "something changed"
+julia -e "using Watcher" [-f=jl,txt] [-w=src,test] [-now] echo "something changed"
 ```
 
 `-f=type1,type2` specifies which file types to watch, default is `jl`
 
 `-w=dir1,dir2` tells it to look only in these two directors, default is the current directory and all its sub directories
 
-Everything after any `-f` and `-w` parameters is the command the will get executed, with the default being `julia test/runtests.jl`.
+`-now` will run the command already once on startup, and then continue watching for changes
+
+Everything after any `-f`, `-w` and `-now` parameters is the command the will get executed, with the default being `julia test/runtests.jl`.
 
 ## Tips
 
