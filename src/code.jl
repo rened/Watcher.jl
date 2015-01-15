@@ -51,10 +51,13 @@ firstn(a, n) = a[1:min(n, length(a))]
 function parseargs(ARGS = ARGS)
 	# -w=dir1,dir2   ... directories to watch, default is all dirs
 	# -f=jl,txt      ... filetype to watch, default "jl"
+    # -now           ... already execute for the first time on startup, then watch
 
-    w = filter(x -> beginswith(x, "-w="), firstn(ARGS,2))
-    f = filter(x -> beginswith(x, "-f="), firstn(ARGS,2))
-	cmd = ARGS[length(w)+length(f)+1:end]
+    nargs = 3
+    w = filter(x -> beginswith(x, "-w="), firstn(ARGS,nargs))
+    f = filter(x -> beginswith(x, "-f="), firstn(ARGS,nargs))
+    now = filter(x -> beginswith(x, "-now"), firstn(ARGS,nargs))
+	cmd = ARGS[length(w)+length(f)+length(now)+1:end]
 	if isempty(cmd)
 		cmd = ["julia", "test/runtests.jl"]
 	end
@@ -67,7 +70,7 @@ function parseargs(ARGS = ARGS)
 	if length(f) > 0 
 		filetypes = map(x-> join([".",x]), split(f[1][4:end],","))
 	end
-	(dirs, filetypes, cmd)
+	(dirs, filetypes, cmd, length(now)>0)
 end
 
 function filehash(filename)
@@ -78,7 +81,7 @@ function filehash(filename)
 	end
 end
 
-function runcmd(cmd, process, watchers, inode, filename)
+function runcmd(cmd, process, watchers=Dict(), inode=0, filename="")
 	h = filehash(filename)
 	if haskey(watchers, inode) && watchers[inode] == h
 		return
