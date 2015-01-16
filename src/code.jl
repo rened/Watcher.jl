@@ -1,5 +1,7 @@
 using SHA
 
+exists(filename::String) = (s = stat(filename); s.inode!=0)
+
 function isdir(filename)
 	s = stat(filename)
     s.mode & 0x4000 > 0
@@ -41,7 +43,9 @@ function watchfiles(f, filenames, watchers)
 		if !haskey(watchers, inodes[i])
 			h = filehash(filenames[i])
 			watchers[inodes[i]] = h
-			watch_file( (fn, ev, st) -> (f(inodes[i], filenames[i])), filenames[i])
+            if exists(filenames[i])
+                watch_file( (fn, ev, st) -> (f(inodes[i], filenames[i])), filenames[i])
+            end
 		end
 	end
 end
@@ -56,6 +60,7 @@ function parseargs(ARGS = ARGS)
     nargs = 3
     w = filter(x -> beginswith(x, "-w="), firstn(ARGS,nargs))
     f = filter(x -> beginswith(x, "-f="), firstn(ARGS,nargs))
+
     now = filter(x -> beginswith(x, "-now"), firstn(ARGS,nargs))
 	cmd = ARGS[length(w)+length(f)+length(now)+1:end]
 	if isempty(cmd)
