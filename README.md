@@ -15,7 +15,13 @@ This will watch all `jl` files in the current directory and in subdiretories, an
 You can change this behaviour:
 
 ```jl
+# using Julia 0.3
 julia -e "using Watcher" [-f=jl,txt] [-w=src,test] [-now] echo "something changed"
+```
+
+```jl
+# using Julia 0.4
+julia -e "using Watcher" -- [-f=jl,txt] [-w=src,test] [-now] echo "something changed"
 ```
 
 `-f=type1,type2` specifies which file types to watch, default is `jl`

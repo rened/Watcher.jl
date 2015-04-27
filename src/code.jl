@@ -1,4 +1,4 @@
-using SHA
+using SHA, Compat
 
 exists(filename::String) = (s = stat(filename); s.inode!=0)
 
@@ -25,7 +25,7 @@ function walk(dirs::Array; kargs...)
 end
 
 
-function walk(dir = "", lists = FileLists({},{},{}))
+function walk(dir = "", lists = FileLists(Any[],Any[],Any[]))
 	items = Base.map(x->joinpath(dir,x), isempty(dir) ? readdir() : readdir(dir))
 	dirs = filter(isdir, items)
 	files = filter(x->!isdir(x), items)
@@ -58,10 +58,10 @@ function parseargs(ARGS = ARGS)
     # -now           ... already execute for the first time on startup, then watch
 
     nargs = 3
-    w = filter(x -> beginswith(x, "-w="), firstn(ARGS,nargs))
-    f = filter(x -> beginswith(x, "-f="), firstn(ARGS,nargs))
+    w = filter(x -> startswith(x, "-w="), firstn(ARGS,nargs))
+    f = filter(x -> startswith(x, "-f="), firstn(ARGS,nargs))
 
-    now = filter(x -> beginswith(x, "-now"), firstn(ARGS,nargs))
+    now = filter(x -> startswith(x, "-now"), firstn(ARGS,nargs))
 	cmd = ARGS[length(w)+length(f)+length(now)+1:end]
 	if isempty(cmd)
 		cmd = ["julia", "test/runtests.jl"]

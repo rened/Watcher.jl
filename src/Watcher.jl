@@ -9,7 +9,7 @@ include("code.jl")
 
 files = filter(x -> any(map(y -> endswith(x,y), filetypes)), walk().files)
 
-processes = {nothing}
+processes = Any[nothing]
 watchers = Dict()
 
 f(inode, h) = (runcmd(cmd, processes, watchers, inode, h); watchfiles(f, files, watchers))
