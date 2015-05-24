@@ -93,7 +93,8 @@ function runcmd(cmd, process, watchers=Dict(), inode=0, filename="")
 	end
 	watchers[inode] = h
 	if isa(process[1], Base.Process)
-		kill(process[1])
+    # 0.4 needs to be killed with SIGKILL==9 instead of SIGTERM==15:
+    kill(process[1], 9) 
 		process[1] = nothing
 	end
 	stream, process[1] = open(`$cmd`)
