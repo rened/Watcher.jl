@@ -12,7 +12,7 @@ files = filter(x -> any(map(y -> endswith(x,y), filetypes)), walk().files)
 processes = Any[nothing]
 watchers = Dict()
 
-f(inode, h) = (runcmd(cmd, processes, watchers, inode, h); watchfiles(f, files, watchers))
+f(h) = (runcmd(cmd, processes, watchers, h); watchfiles(f, files, watchers))
 watchfiles(f, files, watchers)
 
 if runnow

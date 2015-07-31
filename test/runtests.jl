@@ -6,7 +6,7 @@ include("../src/code.jl")
 # as the normal tests just finish too fast
 
 println("starting runtests.jl")
-println(strftime(time()))
+println(Libc.strftime(time()))
 sleep(3)
 println("stopping unittest")
 

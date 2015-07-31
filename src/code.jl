@@ -36,6 +36,12 @@ function walk(dir = "", lists = FileLists(Any[],Any[],Any[]))
 	lists
 end
 
+if VERSION.minor == 3
+    watchfile(filename, f) = watch_file( (fn, ev, st) -> (f(filename); watchfile(filename,f)), filename)
+else
+    watchfile(filename, f) = @async (watch_file(filename); f(filename); watchfile(filename,f))
+end
+
 function watchfiles(f, filenames, watchers)
 	inodes = map(x -> stat(x).inode, filenames)
 
@@ -44,7 +50,7 @@ function watchfiles(f, filenames, watchers)
 			h = filehash(filenames[i])
 			watchers[inodes[i]] = h
             if exists(filenames[i])
-                watch_file( (fn, ev, st) -> (f(inodes[i], filenames[i])), filenames[i])
+                watchfile(filenames[i], f)
             end
 		end
 	end
@@ -75,6 +81,8 @@ function parseargs(ARGS = ARGS)
 	if length(f) > 0 
 		filetypes = map(x-> join([".",x]), split(f[1][4:end],","))
 	end
+    # @show ARGS
+	# @show (dirs, filetypes, cmd, length(now)>0)
 	(dirs, filetypes, cmd, length(now)>0)
 end
 
@@ -86,7 +94,8 @@ function filehash(filename)
 	end
 end
 
-function runcmd(cmd, process, watchers=Dict(), inode=0, filename="")
+function runcmd(cmd, process, watchers=Dict(), filename="")
+    inode = stat(filename).inode
 	h = filehash(filename)
 	if haskey(watchers, inode) && watchers[inode] == h
 		return
