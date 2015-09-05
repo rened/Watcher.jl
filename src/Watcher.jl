@@ -1,3 +1,5 @@
+VERSION >= v"0.4.0-dev+6521" && __precompile__()
+
 module Watch
 include("code.jl")
 
@@ -5,30 +7,32 @@ include("code.jl")
 ###########################
 # start the watchers
 
-try
-    (dirs, filetypes, cmd, runnow) = parseargs()
+function __init__()
+    try
+        (dirs, filetypes, cmd, runnow) = parseargs()
 
-    files = filter(x -> any(map(y -> endswith(x,y), filetypes)), walk().files)
+        files = filter(x -> any(map(y -> endswith(x,y), filetypes)), walk().files)
 
-    processes = Any[nothing]
-    watchers = Dict()
+        processes = Any[nothing]
+        watchers = Dict()
 
-    f(h) = (runcmd(cmd, processes, watchers, h); watchfiles(f, files, watchers))
-    watchfiles(f, files, watchers)
+        f(h) = (runcmd(cmd, processes, watchers, h); watchfiles(f, files, watchers))
+        watchfiles(f, files, watchers)
 
-    if runnow
-        runcmd(cmd, processes)
-    end
+        if runnow
+            runcmd(cmd, processes)
+        end
 
-    while true
-        sleep(1)
-    end
+        while true
+            sleep(1)
+        end
 
-catch e
-    if isa(e, InterruptException)
-        exit()
-    else
-        rethrow(e)
+    catch e
+        if isa(e, InterruptException)
+            exit()
+        else
+            rethrow(e)
+        end
     end
 end
 

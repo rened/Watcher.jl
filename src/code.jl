@@ -72,13 +72,13 @@ function parseargs(ARGS = ARGS)
     f = filter(isf, toparse)
     now = filter(isnow, toparse)
 
+    for x in ARGS[1:parseuntil]
+        if !isarg(x)
+            warn("Watcher: Ignoring unknown argument \"$x\"")
+        end
+    end
 	if splitind > 0
         cmd = ARGS[splitind+1:end]
-        for x in ARGS[1:splitind-1]
-            if !isarg(x)
-                warn("Ignoring unknown argument \"$x\"")
-            end
-        end
     else
 		cmd = ["julia", "test/runtests.jl"]
 	end
