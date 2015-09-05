@@ -1,4 +1,4 @@
-using SHA, Compat
+using SHA
 
 exists(filename::String) = (s = stat(filename); s.inode!=0)
 
@@ -36,11 +36,7 @@ function walk(dir = "", lists = FileLists(Any[],Any[],Any[]))
 	lists
 end
 
-if VERSION.minor == 3
-    watchfile(filename, f) = watch_file( (fn, ev, st) -> (f(filename); watchfile(filename,f)), filename)
-else
-    watchfile(filename, f) = @async (watch_file(filename); f(filename); watchfile(filename,f))
-end
+watchfile(filename, f) = @async (watch_file(filename); f(filename); watchfile(filename,f))
 
 function watchfiles(f, filenames, watchers)
 	inodes = map(x -> stat(x).inode, filenames)
@@ -61,15 +57,29 @@ firstn(a, n) = a[1:min(n, length(a))]
 function parseargs(ARGS = ARGS)
 	# -w=dir1,dir2   ... directories to watch, default is all dirs
 	# -f=jl,txt      ... filetype to watch, default "jl"
-    # -now           ... already execute for the first time on startup, then watch
+    # --now           ... already execute for the first time on startup, then watch
+    # --run           ... everything after this is the command
 
-    nargs = 3
-    w = filter(x -> startswith(x, "-w="), firstn(ARGS,nargs))
-    f = filter(x -> startswith(x, "-f="), firstn(ARGS,nargs))
+    splitind = findfirst("--run" .== ARGS)
+    parseuntil = splitind>0 ? splitind : length(ARGS)
+    toparse = ARGS[1:parseuntil]
 
-    now = filter(x -> startswith(x, "-now"), firstn(ARGS,nargs))
-	cmd = ARGS[length(w)+length(f)+length(now)+1:end]
-	if isempty(cmd)
+    isw(a) = startswith(a, "-w=")
+    isf(a) = startswith(a, "-f=")
+    isnow(a) = startswith(a, "--now")
+    isarg(a) = isw(a) || isf(a) || isnow(a)
+    w = filter(isw, toparse)
+    f = filter(isf, toparse)
+    now = filter(isnow, toparse)
+
+	if splitind > 0
+        cmd = ARGS[splitind+1:end]
+        for x in ARGS[1:splitind-1]
+            if !isarg(x)
+                warn("Ignoring unknown argument \"$x\"")
+            end
+        end
+    else
 		cmd = ["julia", "test/runtests.jl"]
 	end
 
@@ -102,13 +112,19 @@ function runcmd(cmd, process, watchers=Dict(), filename="")
 	end
 	watchers[inode] = h
 	if isa(process[1], Base.Process)
-    # 0.4 needs to be killed with SIGKILL==9 instead of SIGTERM==15:
-    kill(process[1], 9) 
+        kill(process[1],9)
 		process[1] = nothing
 	end
 	stream, process[1] = open(`$cmd`)
-	@async while !eof(stream)
-		print(readline(stream))
-	end
+
+    @async try
+        while !eof(stream)
+            print(readline(stream))
+        end
+    catch e
+        if isa(e, InterruptException)
+            kill(process[1])
+        end
+    end
 end
  
