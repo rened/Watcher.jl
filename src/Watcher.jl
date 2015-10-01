@@ -1,6 +1,6 @@
-VERSION >= v"0.4.0-dev+6521" && __precompile__()
+__precompile__()
 
-module Watch
+module Watcher
 include("code.jl")
 
 

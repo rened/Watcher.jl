@@ -1,4 +1,3 @@
-__precompile__()
 using SHA
 
 exists(filename::AbstractString) = (s = stat(filename); s.inode!=0)
