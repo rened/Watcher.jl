@@ -1,6 +1,7 @@
+__precompile__()
 using SHA
 
-exists(filename::String) = (s = stat(filename); s.inode!=0)
+exists(filename::AbstractString) = (s = stat(filename); s.inode!=0)
 
 function isdir(filename)
 	s = stat(filename)
