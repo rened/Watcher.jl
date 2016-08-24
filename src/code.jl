@@ -101,7 +101,7 @@ function filehash(filename)
 	if filemode(filename) == 0
 		return 0
 	else
-		return sha256(readall(filename))
+		return sha256((VERSION < v"0.5-" ? readall : readstring)(filename))
 	end
 end
 

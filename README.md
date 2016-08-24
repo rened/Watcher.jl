@@ -1,7 +1,9 @@
 # Watcher
 
-[![Build Status](https://travis-ci.org/rened/Watcher.jl.svg?branch=master)](https://travis-ci.org/rened/Watcher.jl)
-[![Watcher](http://pkg.julialang.org/badges/Watcher_0.4.svg)](http://pkg.julialang.org/?pkg=Watcher&ver=0.4)
+[![Build Status](https://travis-ci.org/rened/Watcher.jl.png)](https://travis-ci.org/rened/Watcher.jl)
+[![Build Status](http://pkg.julialang.org/badges/Watcher_0.4.svg)](http://pkg.julialang.org/?pkg=Watcher&ver=0.4)
+[![Build Status](http://pkg.julialang.org/badges/Watcher_0.5.svg)](http://pkg.julialang.org/?pkg=Watcher&ver=0.5)
+
 
 This package allows to run a custom command every time a file in the specified directories changes. It was initally written to auto-run unit tests every time a file gets saved.
 
