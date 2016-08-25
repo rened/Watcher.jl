@@ -1,4 +1,4 @@
-using SHA
+using SHA, Compat
 
 exists(filename::AbstractString) = (s = stat(filename); s.inode!=0)
 
@@ -101,7 +101,7 @@ function filehash(filename)
 	if filemode(filename) == 0
 		return 0
 	else
-		return sha256((VERSION < v"0.5-" ? readall : readstring)(filename))
+		return sha256(readstring(filename))
 	end
 end
 
