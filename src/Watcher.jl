@@ -1,6 +1,9 @@
 __precompile__()
 
 module Watcher
+
+using FileWatching
+
 include("code.jl")
 
 

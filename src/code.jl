@@ -7,7 +7,7 @@ function isdir(filename)
     s.mode & 0x4000 > 0
 end 
 
-type FileLists
+struct FileLists
 	all
 	files
 	dirs
@@ -101,30 +101,32 @@ function filehash(filename)
 	if filemode(filename) == 0
 		return 0
 	else
-		return sha256(readstring(filename))
+		return sha256(read(filename,String))
 	end
 end
 
-function runcmd(cmd, process, watchers=Dict(), filename="")
+function runcmd(cmd::Vector{String}, processes::AbstractVector, watchers=Dict(), filename="")
     inode = stat(filename).inode
 	h = filehash(filename)
 	if haskey(watchers, inode) && watchers[inode] == h
 		return
 	end
 	watchers[inode] = h
-	if isa(process[1], Base.Process)
-        kill(process[1],9)
-		process[1] = nothing
+	if isa(processes[1], Base.Process)
+        kill(processes[1],9)
+		processes[1] = nothing
 	end
-	stream, process[1] = open(`$cmd`)
+    process = open(`$cmd`)
+    processes[1] = process
+    stream = process.out
 
     @async try
         while !eof(stream)
-            print(readline(stream))
+            println(readline(stream))
         end
     catch e
         if isa(e, InterruptException)
-            kill(process[1])
+            kill(processes[1])
         end
     end
 end
