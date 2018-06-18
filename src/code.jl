@@ -122,7 +122,7 @@ function runcmd(cmd::Vector{String}, processes::AbstractVector, watchers=Dict(),
 
     @async try
         while !eof(stream)
-            print(read(stream))
+            print(read(stream, String))
         end
     catch e
         if isa(e, InterruptException)
