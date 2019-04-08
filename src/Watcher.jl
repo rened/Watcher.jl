@@ -1,5 +1,3 @@
-__precompile__()
-
 module Watcher
 
 using FileWatching
@@ -16,10 +14,11 @@ function __init__()
 
         files = filter(x -> any(map(y -> endswith(x,y), filetypes)), walk().files)
 
-        processes = Any[nothing]
+        processes = Any[]
         watchers = Dict()
 
-        f(h) = (runcmd(cmd, processes, watchers, h); watchfiles(f, files, watchers))
+        # f(h) = (runcmd(cmd, processes, watchers, h); watchfiles(f, files, watchers))
+        f(h) = runcmd(cmd, processes, watchers, h)
         watchfiles(f, files, watchers)
 
         if runnow

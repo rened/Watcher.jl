@@ -1,7 +1,5 @@
 using SHA, Compat
 
-exists(filename::AbstractString) = (s = stat(filename); s.inode!=0)
-
 function isdir(filename)
 	s = stat(filename)
     s.mode & 0x4000 > 0
@@ -39,16 +37,12 @@ end
 watchfile(filename, f) = @async (watch_file(filename); f(filename); watchfile(filename,f))
 
 function watchfiles(f, filenames, watchers)
-	inodes = map(x -> stat(x).inode, filenames)
-
-	for i = 1:length(inodes)
-		if !haskey(watchers, inodes[i])
-			h = filehash(filenames[i])
-			watchers[inodes[i]] = h
-            if exists(filenames[i])
-                watchfile(filenames[i], f)
-            end
-		end
+	for filename in filenames
+        if isfile(filename)
+            t = mtime(filename)
+            watchers[filename] = t
+            watchfile(filename, f)
+        end
 	end
 end
 
@@ -60,8 +54,8 @@ function parseargs(ARGS = ARGS)
     # --now           ... already execute for the first time on startup, then watch
     # --run           ... everything after this is the command
 
-    splitind = findfirst("--run" .== ARGS)
-    parseuntil = splitind>0 ? splitind : length(ARGS)
+    splitind = findall("--run" .== ARGS)[1]
+    parseuntil = splitind > 0 ? splitind : length(ARGS)
     toparse = ARGS[1:parseuntil]
 
     isw(a) = startswith(a, "-w=")
@@ -98,35 +92,35 @@ function parseargs(ARGS = ARGS)
 end
 
 function filehash(filename)
-	if filemode(filename) == 0
-		return 0
-	else
-		return sha256(read(filename,String))
-	end
+	return hash(read(filename))
 end
 
-function runcmd(cmd::Vector{String}, processes::AbstractVector, watchers=Dict(), filename="")
-    inode = stat(filename).inode
-	h = filehash(filename)
-	if haskey(watchers, inode) && watchers[inode] == h
-		return
-	end
-	watchers[inode] = h
-	if isa(processes[1], Base.Process)
-        kill(processes[1],9)
-		processes[1] = nothing
-	end
-    process = open(`$cmd`)
-    processes[1] = process
-    stream = process.out
+function runcmd(cmd::Vector{String}, processes::Vector, watchers=Dict(), filename=nothing)
+    if filename != nothing
+        # t = mtime(filename)
+        h = filehash(filename)
+        if watchers[filename] == h
+            return
+        end
+        watchers[filename] = h
+    end
 
     @async try
-        while !eof(stream)
-            print(read(stream, String))
+        while !isempty(processes)
+            p = pop!(processes)
+            kill(p,9)
+        end
+        println("\n\n-------------------------\n\n")
+        process = open(`$cmd`)
+        push!(processes, process)
+        while in(process, processes) && !eof(process.out)
+            x = read(process.out, String)
+            in(process, processes) && print(x)
+            flush(stdout)
         end
     catch e
         if isa(e, InterruptException)
-            kill(processes[1])
+            kill(process)
         end
     end
 end
